@@ -58,3 +58,8 @@ Makefile
 /.cache/
 /compile_commands.json
 /build
+
+README.md
+.gitignore
+.git
+.vscode
