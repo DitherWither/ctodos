@@ -1,12 +1,34 @@
 #include "common.h"
 #include "router.h"
 #include "connection.h"
+#include "todos.h"
+#include <stdio.h>
+
+char template[HTTP_MAX_BODY_SIZE / 2];
 
 void index_handler(struct ParsedRequest *req, char *res);
 void not_found_handler(struct ParsedRequest *req, char *res);
 char *str_replace(char *orig, char *rep, char *with);
+char *load_file(char const *path);
 
-int count = 0;
+void load_template()
+{
+	FILE *fp = fopen("template.html", "r");
+	char c;
+	if (fp != NULL) {
+		size_t newLen = fread(template, sizeof(char), HTTP_MAX_BODY_SIZE / 2, fp);
+		if (ferror(fp) != 0) {
+			fputs("Error reading file", stderr);
+		} else {
+			template[newLen++] = '\0'; /* Just to be safe. */
+		}
+
+		fclose(fp);
+	} else {
+		fatal_error("Could not open file");
+	}
+	strcat(template, "\0");
+}
 
 void router_handle_request(struct Request *raw_req)
 {
@@ -43,22 +65,46 @@ void not_found_handler(struct ParsedRequest *req, char *res)
 
 void index_handler(struct ParsedRequest *req, char *res)
 {
-	if (strcmp(req->method, "POST") == 0) {
-		count++;
-	}
-
 	sprintf(res, "HTTP/1.1 200 OK\r\n");
 	sprintf(res + strlen(res), "Content-Type:text/html\r\n");
 
-	char count_str[8];
-	sprintf(count_str, "%d", count);
+	char *body_inner = malloc(HTTP_MAX_BODY_SIZE / 2);
 
+	sprintf(body_inner, "%s", "<h1>Todos List</h1><ul>");
+
+	struct TodoItem *todo_cursor = todos_get_head();
+
+	while (todo_cursor != NULL) {
+		sprintf(body_inner + strlen(body_inner),
+			"<li>%s: ", todo_cursor->title);
+		switch (todo_cursor->type) {
+		case TODOS_TYPE_COMPLETE:
+			sprintf(body_inner + strlen(body_inner),
+				"Complete</li>");
+			break;
+		case TODOS_TYPE_IN_PROGRESS:
+			sprintf(body_inner + strlen(body_inner),
+				"In Progress</li>");
+			break;
+		case TODOS_TYPE_INCOMPLETE:
+			sprintf(body_inner + strlen(body_inner),
+				"Incomplete</li>");
+			break;
+		default:
+			sprintf(body_inner + strlen(body_inner),
+				"Unknown</li>");
+			break;
+		}
+		todo_cursor = todo_cursor->next;
+	}
+	sprintf(body_inner + strlen(body_inner), "</ul>");
 	char *body = malloc(HTTP_MAX_BODY_SIZE);
-
-	sprintf(body, "%s", "<h1>TODO</h1>");
+	strcpy(body, template);
+	body = str_replace(body, "{{slot}}", body_inner);
 
 	print_body(res, body);
 	free(body);
+	free(body_inner);
 }
 
 struct ParsedRequest *parse_request(struct Request *raw_req)

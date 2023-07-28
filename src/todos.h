@@ -16,11 +16,11 @@ struct TodoItem {
 	struct TodoItem *previous;
 };
 
-struct TodoItem *todos_head = NULL;
-struct TodoItem *todos_tail = NULL;
-
 struct TodoItem *todos_get_by_index(int idx);
-void todos_insert_element(struct TodoItem item);
+void todos_insert_element(struct TodoItem* item);
 int todos_get_length();
+
+struct TodoItem* todos_get_head();
+struct TodoItem* todos_get_tail();
 
 #endif
