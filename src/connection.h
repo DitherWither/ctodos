@@ -2,9 +2,10 @@
 #define _CONNECTION_H_
 
 #include "common.h"
+#include <netinet/in.h>
 
 struct Request {
-    char buffer[REQUEST_MAX_SIZE + 1];
+    char buffer[HTTP_REQUEST_MAX_SIZE + 1];
     ssize_t size;
     int connfd;
 };
@@ -12,7 +13,11 @@ struct Request {
 struct Connection {
     int listenfd;
 
+#ifdef USE_IPV4
+    struct sockaddr_in serve_address;
+#else
     struct sockaddr_in6 serve_address;
+#endif
 };
 
 /// Creates a new connection struct, and binds

@@ -5,10 +5,10 @@
 #include "connection.h"
 
 struct ParsedRequest {
-    char path[256];
+    char path[HTTP_PATH_MAX_SIZE];
     char method[8];
     char http_version[16];
-    char* headers[64];
+    char* headers[HTTP_MAX_HEADERS];
     char* body;
 };
 
