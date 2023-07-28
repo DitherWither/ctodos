@@ -16,4 +16,5 @@
 /// Print error message and quit
 void fatal_error(const char *fmt, ...);
 
+char *str_replace(char *orig, char *rep, char *with);
 #endif

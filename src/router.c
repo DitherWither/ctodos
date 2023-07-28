@@ -74,7 +74,7 @@ void index_handler(struct ParsedRequest *req, char *res)
 {
 	if (strcmp(req->method, "POST") == 0) {
 		// Copy body to a buffer
-		char *title = malloc(32);
+		char title[32];
 		memset(title, 0, 32);
 		char status[16];
 		memset(status, 0, 16);
@@ -103,9 +103,15 @@ void index_handler(struct ParsedRequest *req, char *res)
 			}
 		}
 
-		printf("%s: %s\n", title, status);
+		int status_num = todos_type_from_string(status);
 
-		fflush(stdout);
+                struct TodoItem* item = malloc(sizeof(struct TodoItem));
+
+                strcpy(item->title, title);
+                item->type = status_num;
+
+                todos_insert_element(item);
+
 	}
 	sprintf(res, "HTTP/1.1 200 OK\r\n");
 	sprintf(res + strlen(res), "Content-Type:text/html\r\n");
@@ -124,29 +130,9 @@ void index_handler(struct ParsedRequest *req, char *res)
 
 	sprintf(body_inner, "<ul>");
 	while (todo_cursor != NULL) {
-		sprintf(body_inner + strlen(body_inner),
-			"<li>%s: ", todo_cursor->title);
+		sprintf(body_inner + strlen(body_inner), "<li>%s: %s</li>",
+			todo_cursor->title, todos_type_to_string(todo_cursor));
 
-		// Convert the todos type to string
-		// TODO: Move this to a function in todos.h
-		switch (todo_cursor->type) {
-		case TODOS_TYPE_COMPLETE:
-			sprintf(body_inner + strlen(body_inner),
-				"Complete</li>");
-			break;
-		case TODOS_TYPE_IN_PROGRESS:
-			sprintf(body_inner + strlen(body_inner),
-				"In Progress</li>");
-			break;
-		case TODOS_TYPE_INCOMPLETE:
-			sprintf(body_inner + strlen(body_inner),
-				"Incomplete</li>");
-			break;
-		default:
-			sprintf(body_inner + strlen(body_inner),
-				"Unknown</li>");
-			break;
-		}
 		todo_cursor = todo_cursor->next;
 	}
 	sprintf(body_inner + strlen(body_inner), "</ul>");
@@ -225,53 +211,4 @@ void print_body(char *buffer, char *body)
 	sprintf(buffer + strlen(buffer), "Content-Length:%d\r\n", len);
 	sprintf(buffer + strlen(buffer), "\r\n");
 	sprintf(buffer + strlen(buffer), "%s", body);
-}
-
-/// This code was copied from SO, as I can't be bothered
-/// with this lol
-char *str_replace(char *orig, char *rep, char *with)
-{
-	char *result; // the return string
-	char *ins; // the next insert point
-	char *tmp; // varies
-	int len_rep; // length of rep (the string to remove)
-	int len_with; // length of with (the string to replace rep with)
-	int len_front; // distance between rep and end of last rep
-	int count; // number of replacements
-
-	// sanity checks and initialization
-	if (!orig || !rep)
-		return NULL;
-	len_rep = strlen(rep);
-	if (len_rep == 0)
-		return NULL; // empty rep causes infinite loop during count
-	if (!with)
-		with = "";
-	len_with = strlen(with);
-
-	// count the number of replacements needed
-	ins = orig;
-	for (count = 0; (tmp = strstr(ins, rep)); ++count) {
-		ins = tmp + len_rep;
-	}
-
-	tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
-
-	if (!result)
-		return NULL;
-
-	// first time through the loop, all the variable are set correctly
-	// from here on,
-	//    tmp points to the end of the result string
-	//    ins points to the next occurrence of rep in orig
-	//    orig points to the remainder of orig after "end of rep"
-	while (count--) {
-		ins = strstr(orig, rep);
-		len_front = ins - orig;
-		tmp = strncpy(tmp, orig, len_front) + len_front;
-		tmp = strcpy(tmp, with) + len_with;
-		orig += len_front + len_rep; // move to next "end of rep"
-	}
-	strcpy(tmp, orig);
-	return result;
 }

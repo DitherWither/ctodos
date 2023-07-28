@@ -17,10 +17,13 @@ struct TodoItem {
 };
 
 struct TodoItem *todos_get_by_index(int idx);
-void todos_insert_element(struct TodoItem* item);
+void todos_insert_element(struct TodoItem *item);
 int todos_get_length();
 
-struct TodoItem* todos_get_head();
-struct TodoItem* todos_get_tail();
+char *todos_type_to_string(struct TodoItem *item);
+int todos_type_from_string(char *str);
+
+struct TodoItem *todos_get_head();
+struct TodoItem *todos_get_tail();
 
 #endif
