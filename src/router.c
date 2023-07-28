@@ -53,7 +53,7 @@ end_routing:
 
 void not_found_handler(struct ParsedRequest *req, char *res)
 {
-	sprintf(res, "HTTP/1.1 200 OK\r\n");
+	sprintf(res, "HTTP/1.1 404 Not Found\r\n");
 	sprintf(res + strlen(res), "Content-Type:text/html\r\n");
 
 	char body[HTTP_MAX_BODY_SIZE];
@@ -64,19 +64,24 @@ void not_found_handler(struct ParsedRequest *req, char *res)
 }
 
 void index_handler(struct ParsedRequest *req, char *res)
-{
+{ 
+        if (strcmp(req->method, "POST") == 0) {
+                printf("%s\n", req->body);
+                // TODO: Parse form
+                fflush(stdout);
+        }
 	sprintf(res, "HTTP/1.1 200 OK\r\n");
 	sprintf(res + strlen(res), "Content-Type:text/html\r\n");
 
 	char *body_inner = malloc(HTTP_MAX_BODY_SIZE / 2);
-
-	sprintf(body_inner, "%s", "<h1>Todos List</h1><ul>");
+        memset(body_inner, 0, HTTP_MAX_BODY_SIZE / 2);
 
 	struct TodoItem *todo_cursor = todos_get_head();
-
+        sprintf(body_inner, "<ul>");
 	while (todo_cursor != NULL) {
 		sprintf(body_inner + strlen(body_inner),
 			"<li>%s: ", todo_cursor->title);
+
 		switch (todo_cursor->type) {
 		case TODOS_TYPE_COMPLETE:
 			sprintf(body_inner + strlen(body_inner),

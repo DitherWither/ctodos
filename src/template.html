@@ -1,11 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Todos App</title>
-</head>
-<body>
-        {{slot}}
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todos App</title>
+  </head>
+  <body>
+    <h1>Todos List</h1>
+    <div class="list-display">{{slot}}</div>
+    <form action="/" method="post">
+      <input
+        type="text"
+        name="title"
+        placeholder="title"
+        required
+        maxlength="30"
+      />
+      <select name="status">
+        <option value="incomplete" selected>Incomplete</option>
+        <option value="complete">Complete</option>
+        <option value="in-progress">In Progress</option>
+      </select>
+      <button type="submit">Submit</button>
+    </form>
+  </body>
 </html>
