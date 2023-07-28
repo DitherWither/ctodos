@@ -51,14 +51,14 @@ struct sockaddr_in6 setup_addr(int port)
 #else
 struct sockaddr_in setup_addr(int port)
 {
-    struct sockaddr_in serve_address;
-    memset(&serve_address, 0, sizeof(serve_address));
+	struct sockaddr_in serve_address;
+	memset(&serve_address, 0, sizeof(serve_address));
 
-    serve_address.sin_family = AF_INET;
-    serve_address.sin_port = INADDR_ANY;
-    serve_address.sin_port = htons(port);
+	serve_address.sin_family = AF_INET;
+	serve_address.sin_port = INADDR_ANY;
+	serve_address.sin_port = htons(port);
 
-    return serve_address;
+	return serve_address;
 }
 #endif
 

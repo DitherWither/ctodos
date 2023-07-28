@@ -3,16 +3,15 @@
 #include "connection.h"
 #include "router.h"
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
-    struct Connection conn = connection_new(SERVER_PORT);
- 
-    while (true) {
-        struct Request* req = connection_get_request(&conn);
+	struct Connection conn = connection_new(SERVER_PORT);
 
-        router_handle_request(req);
+	while (true) {
+		struct Request *req = connection_get_request(&conn);
 
-        connection_delete_request(req);
-    }
+		router_handle_request(req);
+
+		connection_delete_request(req);
+	}
 }
-
