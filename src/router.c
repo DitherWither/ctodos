@@ -75,9 +75,9 @@ void index_handler(struct ParsedRequest *req, char *res)
 	if (strcmp(req->method, "POST") == 0) {
 		// Copy body to a buffer
 		char *title = malloc(32);
-                memset(title, 0, 32);
+		memset(title, 0, 32);
 		char status[16];
-                memset(status, 0, 16);
+		memset(status, 0, 16);
 
 		// Repeatedly call str_split to get individual fields
 		// as an array
@@ -91,17 +91,17 @@ void index_handler(struct ParsedRequest *req, char *res)
 			i++;
 		}
 
-                for (i = 0; i < 4; i++) {
-                        if (fields[i] == NULL) break;
-                        char* name = strsep(&fields[i], "=");
-                        if (strcmp("title", name) == 0) {
-                                strcpy(title, fields[i]);
-                        }
-                        if (strcmp("status", name) == 0) {
-                                strcpy(status, fields[i]);
-                        }
-
-                }
+		for (i = 0; i < 4; i++) {
+			if (fields[i] == NULL)
+				break;
+			char *name = strsep(&fields[i], "=");
+			if (strcmp("title", name) == 0) {
+				strcpy(title, fields[i]);
+			}
+			if (strcmp("status", name) == 0) {
+				strcpy(status, fields[i]);
+			}
+		}
 
 		printf("%s: %s\n", title, status);
 
