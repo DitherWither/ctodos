@@ -55,3 +55,5 @@ Makefile
 /config.h
 *.o
 /src/ctodos
+/.cache/
+/compile_commands.json

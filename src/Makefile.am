@@ -1,2 +1,2 @@
 bin_PROGRAMS = ctodos
-ctodos_SOURCES = main.c
+ctodos_SOURCES = common.c connection.c main.c router.c
