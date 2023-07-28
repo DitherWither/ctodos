@@ -105,13 +105,12 @@ void index_handler(struct ParsedRequest *req, char *res)
 
 		int status_num = todos_type_from_string(status);
 
-                struct TodoItem* item = malloc(sizeof(struct TodoItem));
+		struct TodoItem *item = malloc(sizeof(struct TodoItem));
 
-                strcpy(item->title, title);
-                item->type = status_num;
+		strcpy(item->title, title);
+		item->type = status_num;
 
-                todos_insert_element(item);
-
+		todos_insert_element(item);
 	}
 	sprintf(res, "HTTP/1.1 200 OK\r\n");
 	sprintf(res + strlen(res), "Content-Type:text/html\r\n");

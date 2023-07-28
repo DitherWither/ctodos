@@ -95,17 +95,17 @@ char *todos_type_to_string(struct TodoItem *item)
 int todos_type_from_string(char *str)
 {
 	if (strcmp(str, "complete") == 0) {
-                return TODOS_TYPE_COMPLETE;
+		return TODOS_TYPE_COMPLETE;
 	}
 
-        if (strcmp(str, "incomplete") == 0) {
-                return TODOS_TYPE_INCOMPLETE;
-        }
+	if (strcmp(str, "incomplete") == 0) {
+		return TODOS_TYPE_INCOMPLETE;
+	}
 
-        if (strcmp(str, "in-progress") == 0) {
-                return TODOS_TYPE_IN_PROGRESS;
-        }
+	if (strcmp(str, "in-progress") == 0) {
+		return TODOS_TYPE_IN_PROGRESS;
+	}
 
-        // If the type wasn't known
-        return -1;
+	// If the type wasn't known
+	return -1;
 }

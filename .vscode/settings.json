@@ -1,4 +1,8 @@
 {
         "editor.tabSize": 8,
-        "editor.detectIndentation": false
+        "editor.detectIndentation": false,
+        "cSpell.words": [
+                "connfd",
+                "listenfd"
+        ]
 }
