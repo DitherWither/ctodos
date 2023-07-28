@@ -9,14 +9,15 @@ char template[HTTP_MAX_BODY_SIZE / 2];
 void index_handler(struct ParsedRequest *req, char *res);
 void not_found_handler(struct ParsedRequest *req, char *res);
 char *str_replace(char *orig, char *rep, char *with);
-char *load_file(char const *path);
 
+/// Load the entire template.html file into memory
 void load_template()
 {
 	FILE *fp = fopen("template.html", "r");
 	char c;
 	if (fp != NULL) {
-		size_t newLen = fread(template, sizeof(char), HTTP_MAX_BODY_SIZE / 2, fp);
+		size_t newLen = fread(template, sizeof(char),
+				      HTTP_MAX_BODY_SIZE / 2, fp);
 		if (ferror(fp) != 0) {
 			fputs("Error reading file", stderr);
 		} else {
@@ -34,14 +35,18 @@ void router_handle_request(struct Request *raw_req)
 {
 	struct ParsedRequest *req = parse_request(raw_req);
 
+	// Buffer for the body
 	char *buffer = malloc(HTTP_RESPONSE_MAX_SIZE);
 	memset(buffer, 0, HTTP_RESPONSE_MAX_SIZE);
 
 	if (strcmp("/", req->path) == 0) {
 		index_handler(req, buffer);
+		// Edsger Dijkstra will haunt my soul in the afterlife for this
 		goto end_routing;
 	}
 
+	// If nothing called goto yet, assume that nothing
+	// handles it, and display 404 not found
 	not_found_handler(req, buffer);
 
 end_routing:
@@ -51,6 +56,7 @@ end_routing:
 	free(req);
 }
 
+/// Handler for the 404 not found page
 void not_found_handler(struct ParsedRequest *req, char *res)
 {
 	sprintf(res, "HTTP/1.1 404 Not Found\r\n");
@@ -63,25 +69,66 @@ void not_found_handler(struct ParsedRequest *req, char *res)
 	print_body(res, body);
 }
 
+/// handler for the `/` route
 void index_handler(struct ParsedRequest *req, char *res)
-{ 
-        if (strcmp(req->method, "POST") == 0) {
-                printf("%s\n", req->body);
-                // TODO: Parse form
-                fflush(stdout);
-        }
+{
+	if (strcmp(req->method, "POST") == 0) {
+		// Copy body to a buffer
+		char *title = malloc(32);
+                memset(title, 0, 32);
+		char status[16];
+                memset(status, 0, 16);
+
+		// Repeatedly call str_split to get individual fields
+		// as an array
+		// Allocating 2 extra fields just in case
+		char *fields[4] = { NULL, NULL, NULL, NULL };
+
+		char *token;
+		int i = 0;
+		while ((token = strsep(&req->body, "&"))) {
+			fields[i] = token;
+			i++;
+		}
+
+                for (i = 0; i < 4; i++) {
+                        if (fields[i] == NULL) break;
+                        char* name = strsep(&fields[i], "=");
+                        if (strcmp("title", name) == 0) {
+                                strcpy(title, fields[i]);
+                        }
+                        if (strcmp("status", name) == 0) {
+                                strcpy(status, fields[i]);
+                        }
+
+                }
+
+		printf("%s: %s\n", title, status);
+
+		fflush(stdout);
+	}
 	sprintf(res, "HTTP/1.1 200 OK\r\n");
 	sprintf(res + strlen(res), "Content-Type:text/html\r\n");
 
+	// Inner body we write stuff to
+	// the outer body will wrap this with the contents of
+	// template.html
 	char *body_inner = malloc(HTTP_MAX_BODY_SIZE / 2);
-        memset(body_inner, 0, HTTP_MAX_BODY_SIZE / 2);
+	memset(body_inner, 0, HTTP_MAX_BODY_SIZE / 2);
 
+	// todos are stored in a linked list.
 	struct TodoItem *todo_cursor = todos_get_head();
-        sprintf(body_inner, "<ul>");
+
+	// This writes the whole todos list into the
+	// unordered list
+
+	sprintf(body_inner, "<ul>");
 	while (todo_cursor != NULL) {
 		sprintf(body_inner + strlen(body_inner),
 			"<li>%s: ", todo_cursor->title);
 
+		// Convert the todos type to string
+		// TODO: Move this to a function in todos.h
 		switch (todo_cursor->type) {
 		case TODOS_TYPE_COMPLETE:
 			sprintf(body_inner + strlen(body_inner),
@@ -103,7 +150,9 @@ void index_handler(struct ParsedRequest *req, char *res)
 		todo_cursor = todo_cursor->next;
 	}
 	sprintf(body_inner + strlen(body_inner), "</ul>");
+
 	char *body = malloc(HTTP_MAX_BODY_SIZE);
+	// Copy template so that we don't accidentally mutate it
 	strcpy(body, template);
 	body = str_replace(body, "{{slot}}", body_inner);
 
@@ -112,31 +161,52 @@ void index_handler(struct ParsedRequest *req, char *res)
 	free(body_inner);
 }
 
+/// Takes a raw, unparsed request, and returns
+/// a parsed request.
+///
+/// It internally mutates the raw request, and
+/// doesn't copy the memory of the request
+/// TODO: fix this, and copy the memory
 struct ParsedRequest *parse_request(struct Request *raw_req)
 {
 	struct ParsedRequest *req = malloc(sizeof(struct ParsedRequest));
 
 	char *headers_start = 0;
 
+	// Get the data from first line.
 	sscanf(raw_req->buffer, "%8s %256s %16s", req->method, req->path,
 	       req->http_version);
 
 	// This code is utter garbage lol
+	//
+	// We are starting at 4, as we want to be able to look
+	// behind atleast 4 characters to look for "\r\n\r\n"
+	// and the first line is guaranteed to be longer than
+	// 4 characters anyways.
 	for (int i = 4; i < strlen(raw_req->buffer); i++) {
 		if (raw_req->buffer[i - 1] == '\n' &&
 		    raw_req->buffer[i - 2] == '\r') {
+			// If the cursor is at start of a newline
 			if (raw_req->buffer[i - 3] == '\n' &&
 			    raw_req->buffer[i - 4] == '\r') {
-				// If is end of header
+				// If is at the end of header
+				//
+				// The headers section ends with \r\n\r\n
+				// aka empty line.
 				req->body = &raw_req->buffer[i];
 				break;
 			}
 			if (headers_start == 0) {
+				// If this is after the end of first line,
+				// that means that we are at the start of
+				// the headers section
 				headers_start = &raw_req->buffer[i];
 			}
 		}
 	}
 
+	// Split the headers into the headers array
+	// TODO: split each header into key-value pairs
 	char *token;
 	int i = 0;
 	while ((token = strsep(&headers_start, "\r\n"))) {
@@ -147,6 +217,7 @@ struct ParsedRequest *parse_request(struct Request *raw_req)
 	return req;
 }
 
+/// Print the body into the request
 void print_body(char *buffer, char *body)
 {
 	int len = strlen(body);
@@ -156,8 +227,8 @@ void print_body(char *buffer, char *body)
 	sprintf(buffer + strlen(buffer), "%s", body);
 }
 
-// This code was copied from SO, as I can't be bothered
-// with this lol
+/// This code was copied from SO, as I can't be bothered
+/// with this lol
 char *str_replace(char *orig, char *rep, char *with)
 {
 	char *result; // the return string
