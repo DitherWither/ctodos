@@ -109,3 +109,28 @@ int todos_type_from_string(char *str)
 	// If the type wasn't known
 	return -1;
 }
+
+void todos_remove_by_index(int idx)
+{
+	struct TodoItem *todo_item = todos_get_by_index(idx);
+
+        // this odd structure is so that if head == tail, it will stil handle it properly
+        if (todo_item == todos_head || todo_item == todos_tail) {
+                if (todo_item == todos_head) {
+                        todos_head = todo_item->next;
+                }
+
+                if (todo_item == todos_tail) {
+                        todos_tail = todo_item->previous;
+                }
+
+                return;
+        }
+
+	if (todo_item->previous != NULL && todo_item->previous->next != NULL) {
+		todo_item->previous->next = todo_item->next;
+        }
+	if (todo_item->next != NULL && todo_item->next->previous != NULL)
+		todo_item->next->previous = todo_item->previous;
+
+}

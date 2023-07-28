@@ -3,12 +3,14 @@
 #include "connection.h"
 #include "todos.h"
 #include <stdio.h>
+#include <string.h>
 
 char template[HTTP_MAX_BODY_SIZE / 2];
 
 void index_handler(struct ParsedRequest *req, char *res);
 void not_found_handler(struct ParsedRequest *req, char *res);
 char *str_replace(char *orig, char *rep, char *with);
+void todo_page_handler(struct ParsedRequest *req, char *res);
 
 /// Load the entire template.html file into memory
 void load_template()
@@ -31,6 +33,39 @@ void load_template()
 	strcat(template, "\0");
 }
 
+bool check_begins_with(const char *pre, const char *str)
+{
+	return strncmp(pre, str, strlen(pre)) == 0;
+}
+
+void todo_page_handler(struct ParsedRequest *req, char *res)
+{
+	sprintf(res, "HTTP/1.1 302 Found\r\n");
+// TODO: make this url configurable
+#ifdef USE_IPV4
+	sprintf(res + strlen(res), "Location: http://localhost:%d/\r\n",
+		SERVER_PORT);
+#else
+	sprintf(res + strlen(res), "Location: http://[::1]:%d/\r\n",
+		SERVER_PORT);
+#endif
+	fflush(stdout);
+
+	if (check_begins_with("/todo/delete", req->path)) {
+		int idx;
+		sscanf(req->path, "/todo/delete/%d", &idx);
+
+		// struct TodoItem *todo_item = todos_get_by_index(idx);
+		// printf("todo_item = %s", todo_item->title);
+		// fflush(stdout);
+
+		todos_remove_by_index(idx);
+
+		// free(todo_item);
+		return;
+	}
+}
+
 void router_handle_request(struct Request *raw_req)
 {
 	struct ParsedRequest *req = parse_request(raw_req);
@@ -42,6 +77,11 @@ void router_handle_request(struct Request *raw_req)
 	if (strcmp("/", req->path) == 0) {
 		index_handler(req, buffer);
 		// Edsger Dijkstra will haunt my soul in the afterlife for this
+		goto end_routing;
+	}
+
+	if (check_begins_with("/todo/", req->path)) {
+		todo_page_handler(req, buffer);
 		goto end_routing;
 	}
 
@@ -74,8 +114,8 @@ void index_handler(struct ParsedRequest *req, char *res)
 {
 	if (strcmp(req->method, "POST") == 0) {
 		// Copy body to a buffer
-		char title[32];
-		memset(title, 0, 32);
+		char title[64];
+		memset(title, 0, 64);
 		char status[16];
 		memset(status, 0, 16);
 
@@ -105,6 +145,11 @@ void index_handler(struct ParsedRequest *req, char *res)
 
 		int status_num = todos_type_from_string(status);
 
+		strcpy(title, str_replace(title, "+", " "));
+		char *decoded = url_decode(title);
+		strcpy(title, decoded);
+		free(decoded);
+
 		struct TodoItem *item = malloc(sizeof(struct TodoItem));
 
 		strcpy(item->title, title);
@@ -126,13 +171,18 @@ void index_handler(struct ParsedRequest *req, char *res)
 
 	// This writes the whole todos list into the
 	// unordered list
-
+	int i = 0;
 	sprintf(body_inner, "<ul>");
 	while (todo_cursor != NULL) {
-		sprintf(body_inner + strlen(body_inner), "<li>%s: %s</li>",
+		sprintf(body_inner + strlen(body_inner), "<li>%s: %s",
 			todo_cursor->title, todos_type_to_string(todo_cursor));
 
+		sprintf(body_inner + strlen(body_inner),
+			"<form action=\"/todo/delete/%d\"><button type=\"submit\">Delete</button></form>",
+			i);
+
 		todo_cursor = todo_cursor->next;
+		i++;
 	}
 	sprintf(body_inner + strlen(body_inner), "</ul>");
 

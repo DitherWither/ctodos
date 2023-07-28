@@ -19,6 +19,7 @@ struct TodoItem {
 struct TodoItem *todos_get_by_index(int idx);
 void todos_insert_element(struct TodoItem *item);
 int todos_get_length();
+void todos_remove_by_index(int idx);
 
 char *todos_type_to_string(struct TodoItem *item);
 int todos_type_from_string(char *str);
