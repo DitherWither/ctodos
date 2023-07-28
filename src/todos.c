@@ -114,7 +114,7 @@ void todos_remove_by_index(int idx)
 {
 	struct TodoItem *todo_item = todos_get_by_index(idx);
 
-        // this odd structure is so that if head == tail, it will stil handle it properly
+        // this odd structure is so that if head == tail, it will still handle it properly
         if (todo_item == todos_head || todo_item == todos_tail) {
                 if (todo_item == todos_head) {
                         todos_head = todo_item->next;
