@@ -189,23 +189,43 @@ void index_handler(struct ParsedRequest *req, char *res)
 	// unordered list
 	int i = 0;
 	while (todo_cursor != NULL) {
-		sprintf(body_inner + strlen(body_inner), "<div>%s: %s<div class=\"buttons-display\">",
+		sprintf(body_inner + strlen(body_inner),
+			"<div>%s <p>%s</p><div class=\"buttons-display\">",
 			todo_cursor->title, todos_type_to_string(todo_cursor));
 
 		// TODO: Clean this code up
+		if (todo_cursor->type == TODOS_TYPE_INCOMPLETE) {
+			sprintf(body_inner + strlen(body_inner),
+				"<form action=\"/todo/mark-as-incomplete/%d\"><button type=\"submit\" disabled>Mark as Incomplete</button></form>",
+				i);
+		} else {
+			sprintf(body_inner + strlen(body_inner),
+				"<form action=\"/todo/mark-as-incomplete/%d\"><button type=\"submit\">Mark as Incomplete</button></form>",
+				i);
+		}
+
+		if (todo_cursor->type == TODOS_TYPE_IN_PROGRESS) {
+			sprintf(body_inner + strlen(body_inner),
+				"<form action=\"/todo/mark-as-in-progress/%d\"><button type=\"submit\" disabled>Mark as In Progress</button></form>",
+				i);
+		} else {
+			sprintf(body_inner + strlen(body_inner),
+				"<form action=\"/todo/mark-as-in-progress/%d\"><button type=\"submit\">Mark as In Progress</button></form>",
+				i);
+		}
+
+		if (todo_cursor->type == TODOS_TYPE_COMPLETE) {
+			sprintf(body_inner + strlen(body_inner),
+				"<form action=\"/todo/mark-as-complete/%d\"><button type=\"submit\" disabled>Mark as Complete</button></form>",
+				i);
+		} else {
+			sprintf(body_inner + strlen(body_inner),
+				"<form action=\"/todo/mark-as-complete/%d\"><button type=\"submit\">Mark as Complete</button></form>",
+				i);
+		}
 
 		sprintf(body_inner + strlen(body_inner),
-			"<form action=\"/todo/mark-as-incomplete/%d\"><button type=\"submit\">Mark as Incomplete</button></form>",
-			i);
-		sprintf(body_inner + strlen(body_inner),
-			"<form action=\"/todo/mark-as-in-progress/%d\"><button type=\"submit\">Mark as In Progress</button></form>",
-			i);
-		sprintf(body_inner + strlen(body_inner),
-			"<form action=\"/todo/mark-as-complete/%d\"><button type=\"submit\">Mark as Complete</button></form>",
-			i);
-
-		sprintf(body_inner + strlen(body_inner),
-			"<form action=\"/todo/delete/%d\"><button type=\"submit\">Delete</button></form>",
+			"<form action=\"/todo/delete/%d\"><button type=\"submit\" class=\"delete-button\">Delete</button></form>",
 			i);
 
 		todo_cursor = todo_cursor->next;
