@@ -4,9 +4,11 @@ CTodos is a Todos List web app, written in pure c. It only has a dependency on t
 
 It has been tested on linux, although it should work on other posix operating systems.
 
-## Why?
+It is a stateful application, and does not use a database, as one of the constraints for this web app
+was zero libraries.
 
-I thought that it would be really funny to do this in c, caveman style. Of course, it would be really hard to do a complex project, so I picked a simple todos app.
+It also does not have the concept of users, and everyone sees and modifies the same todo list.
+
 
 ## How?
 
@@ -40,7 +42,7 @@ with your preferred redirect link. It should redirect you to the index page
 
 First, install gnu autotools and a c compiler.
 
-Then run the following lines in a terminal:
+Then run the following commands in the project directory
 ```bash
 cd /path/to/project/
 autoreconf --install .
@@ -49,3 +51,15 @@ make all
 ```
 
 The application binary should be compiled to `src/ctodos`.
+
+## Docker builds
+
+To build a docker image, run the following command in the project directory
+```bash
+docker build . --tag="ctodos"
+```
+
+and then run the application using:
+```bash
+docker run --rm -p 8080:8080 ctodos
+```
