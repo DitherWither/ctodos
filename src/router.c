@@ -3,6 +3,7 @@
 #include "connection.h"
 #include "todos.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 char template[HTTP_MAX_BODY_SIZE / 2];
@@ -120,11 +121,12 @@ void not_found_handler(struct ParsedRequest *req, char *res)
 	sprintf(res, "HTTP/1.1 404 Not Found\r\n");
 	sprintf(res + strlen(res), "Content-Type:text/html\r\n");
 
-	char body[HTTP_MAX_BODY_SIZE];
+	char *body = malloc(HTTP_MAX_BODY_SIZE);
 
 	sprintf(body, "<h1>Not Found</h1>");
 
 	print_body(res, body);
+        free(body);
 }
 
 /// handler for the `/` route
@@ -218,14 +220,16 @@ void index_handler(struct ParsedRequest *req, char *res)
 	}
 	sprintf(body_inner + strlen(body_inner), "</ul>");
 
-	char *body = malloc(HTTP_MAX_BODY_SIZE);
+	char *temp = malloc(HTTP_MAX_BODY_SIZE);
+        char* body;
 	// Copy template so that we don't accidentally mutate it
-	strcpy(body, template);
-	body = str_replace(body, "{{slot}}", body_inner);
+	strcpy(temp, template);
+	body = str_replace(temp, "{{slot}}", body_inner);
+        free(temp);
+	free(body_inner);
 
 	print_body(res, body);
 	free(body);
-	free(body_inner);
 }
 
 /// Takes a raw, unparsed request, and returns
