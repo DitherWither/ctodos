@@ -118,7 +118,7 @@ void not_found_handler(struct ParsedRequest *req, char *res)
 	sprintf(body, "<h1>Not Found</h1>");
 
 	print_body(res, body);
-        free(body);
+	free(body);
 }
 
 /// handler for the `/` route
@@ -127,10 +127,10 @@ void index_handler(struct ParsedRequest *req, char *res)
 	if (strcmp(req->method, "POST") == 0) {
 		// Copy body to a buffer
 		char title[64];
-                // title[0] = '\0';
+		// title[0] = '\0';
 		memset(title, 0, 64);
 		char status[16];
-                // status[0] = '\0';
+		// status[0] = '\0';
 		memset(status, 0, 16);
 
 		// Repeatedly call str_split to get individual fields
@@ -158,13 +158,13 @@ void index_handler(struct ParsedRequest *req, char *res)
 		}
 
 		int status_num = todos_type_from_string(status);
-                char *tmp;
-                tmp = str_replace(title, "+", " ");
+		char *tmp;
+		tmp = str_replace(title, "+", " ");
 		strcpy(title, tmp);
 		char *decoded = url_decode(title);
 		strcpy(title, decoded);
 		free(decoded);
-                free(tmp);
+		free(tmp);
 
 		struct TodoItem *item = malloc(sizeof(struct TodoItem));
 
@@ -188,12 +188,11 @@ void index_handler(struct ParsedRequest *req, char *res)
 	// This writes the whole todos list into the
 	// unordered list
 	int i = 0;
-	sprintf(body_inner, "<ul>");
 	while (todo_cursor != NULL) {
-		sprintf(body_inner + strlen(body_inner), "<li>%s: %s",
+		sprintf(body_inner + strlen(body_inner), "<div>%s: %s<div class=\"buttons-display\">",
 			todo_cursor->title, todos_type_to_string(todo_cursor));
-                
-                // TODO: Clean this code up
+
+		// TODO: Clean this code up
 
 		sprintf(body_inner + strlen(body_inner),
 			"<form action=\"/todo/mark-as-incomplete/%d\"><button type=\"submit\">Mark as Incomplete</button></form>",
@@ -211,15 +210,15 @@ void index_handler(struct ParsedRequest *req, char *res)
 
 		todo_cursor = todo_cursor->next;
 		i++;
+		sprintf(body_inner + strlen(body_inner), "</div></div>");
 	}
-	sprintf(body_inner + strlen(body_inner), "</ul>");
 
 	char *temp = malloc(HTTP_MAX_BODY_SIZE);
-        char* body;
+	char *body;
 	// Copy template so that we don't accidentally mutate it
 	strcpy(temp, template);
 	body = str_replace(temp, "{{slot}}", body_inner);
-        free(temp);
+	free(temp);
 	free(body_inner);
 
 	print_body(res, body);

@@ -4,24 +4,122 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Todos App</title>
+    <style>
+      head,
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: hsl(232, 100%, 8%);
+        color: hsl(232, 100%, 95%);
+      }
+      h1 {
+        font-weight: 900;
+        font-size: 5rem;
+        text-align: center;
+      }
+
+      h2 {
+        font-weight: 600;
+        font-size: 3rem;
+        text-align: center;
+        margin: 1rem 0.5rem;
+      }
+
+      body form {
+        display: flex;
+        flex-direction: column;
+        max-width: 40rem;
+        gap: 0.5rem;
+      }
+
+      button {
+        background-color: hsl(232, 100%, 55%);
+        font-weight: bold;
+        color: hsl(232, 100%, 95%);
+        border-radius: 1rem;
+        border-width: 0px;
+        padding: 1rem;
+        padding-left: auto;
+        padding-right: auto;
+      }
+
+      input {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+      }
+
+      select {
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        text-align: center;
+      }
+
+      form {
+        margin: 1rem;
+      }
+
+      .list-display div form {
+        display: inline;
+      }
+      .buttons-display {
+        display: flex;
+
+      }
+
+      .list-display {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding: 1rem 3rem;
+        gap: 1rem;
+      }
+
+      .list-display div {
+        background-color: hsl(232, 100%, 10%);
+        padding: 1rem;
+        padding-top: 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        font-weight: bold;
+        font-size: 2rem;
+      }
+
+      .list-display div form {
+        width: 100%;
+      }
+
+      .list-display div form button {
+        width: 100%;
+      }
+
+      .hcenter {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+    </style>
   </head>
   <body>
-    <h1>Todos List</h1>
+    <h1>Todo List</h1>
     <div class="list-display">{{slot}}</div>
-    <form action="/" method="post">
-      <input
-        type="text"
-        name="title"
-        placeholder="title"
-        required
-        maxlength="30"
-      />
-      <select name="status">
-        <option value="incomplete" selected>Incomplete</option>
-        <option value="complete">Complete</option>
-        <option value="in-progress">In Progress</option>
-      </select>
-      <button type="submit">Submit</button>
-    </form>
+    <h2>
+        New Todo
+    </h2>
+    <div class="hcenter">
+      <form action="/" method="post">
+        <input
+          type="text"
+          name="title"
+          placeholder="title"
+          required
+          maxlength="30"
+        />
+        <select name="status">
+          <option value="incomplete" selected>Incomplete</option>
+          <option value="complete">Complete</option>
+          <option value="in-progress">In Progress</option>
+        </select>
+        <button type="submit">Submit</button>
+      </form>
+    </div>
   </body>
 </html>
