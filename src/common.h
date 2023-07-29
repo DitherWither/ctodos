@@ -13,6 +13,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#define dbg_print() fprintf(stderr, "%s: %d\n", __func__, __LINE__)
+
 /// Print error message and quit
 void fatal_error(const char *fmt, ...);
 

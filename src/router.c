@@ -133,8 +133,10 @@ void index_handler(struct ParsedRequest *req, char *res)
 	if (strcmp(req->method, "POST") == 0) {
 		// Copy body to a buffer
 		char title[64];
+                // title[0] = '\0';
 		memset(title, 0, 64);
 		char status[16];
+                // status[0] = '\0';
 		memset(status, 0, 16);
 
 		// Repeatedly call str_split to get individual fields
@@ -181,8 +183,8 @@ void index_handler(struct ParsedRequest *req, char *res)
 	// Inner body we write stuff to
 	// the outer body will wrap this with the contents of
 	// template.html
-	char *body_inner = malloc(HTTP_MAX_BODY_SIZE / 2);
-	memset(body_inner, 0, HTTP_MAX_BODY_SIZE / 2);
+	char *body_inner = malloc(HTTP_MAX_BODY_SIZE - strlen(template));
+	memset(body_inner, 0, HTTP_MAX_BODY_SIZE - strlen(template));
 
 	// todos are stored in a linked list.
 	struct TodoItem *todo_cursor = todos_get_head();

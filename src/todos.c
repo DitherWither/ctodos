@@ -1,4 +1,5 @@
 #include "todos.h"
+#include "common.h"
 
 struct TodoItem *todos_head = NULL;
 struct TodoItem *todos_tail = NULL;
@@ -124,6 +125,7 @@ void todos_remove_by_index(int idx)
                 if (todo_item == todos_tail) {
                         todos_tail = todo_item->previous;
                 }
+                dbg_print();
                 free(todo_item);
 
                 return;
@@ -136,5 +138,6 @@ void todos_remove_by_index(int idx)
 	if (todo_item->next != NULL && todo_item->next->previous != NULL) {
 		todo_item->next->previous = todo_item->previous;
         }
+        dbg_print();
         free(tmp);
 }
