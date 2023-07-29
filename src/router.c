@@ -50,19 +50,11 @@ void todo_page_handler(struct ParsedRequest *req, char *res)
 	sprintf(res + strlen(res), "Location: http://[::1]:%d/\r\n",
 		SERVER_PORT);
 #endif
-	fflush(stdout);
 
 	int idx;
 	if (check_begins_with("/todo/delete", req->path)) {
 		sscanf(req->path, "/todo/delete/%d", &idx);
-
-		// struct TodoItem *todo_item = todos_get_by_index(idx);
-		// printf("todo_item = %s", todo_item->title);
-		// fflush(stdout);
-
 		todos_remove_by_index(idx);
-
-		// free(todo_item);
 		return;
 	}
 
@@ -166,11 +158,13 @@ void index_handler(struct ParsedRequest *req, char *res)
 		}
 
 		int status_num = todos_type_from_string(status);
-
-		strcpy(title, str_replace(title, "+", " "));
+                char *tmp;
+                tmp = str_replace(title, "+", " ");
+		strcpy(title, tmp);
 		char *decoded = url_decode(title);
 		strcpy(title, decoded);
 		free(decoded);
+                free(tmp);
 
 		struct TodoItem *item = malloc(sizeof(struct TodoItem));
 

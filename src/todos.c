@@ -125,9 +125,6 @@ void todos_remove_by_index(int idx)
                 if (todo_item == todos_tail) {
                         todos_tail = todo_item->previous;
                 }
-                free(todo_item);
-
-                return;
         }
         struct TodoItem* tmp = todo_item;
 
