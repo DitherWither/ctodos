@@ -51,8 +51,8 @@ void todo_page_handler(struct ParsedRequest *req, char *res)
 #endif
 	fflush(stdout);
 
+	int idx;
 	if (check_begins_with("/todo/delete", req->path)) {
-		int idx;
 		sscanf(req->path, "/todo/delete/%d", &idx);
 
 		// struct TodoItem *todo_item = todos_get_by_index(idx);
@@ -62,6 +62,24 @@ void todo_page_handler(struct ParsedRequest *req, char *res)
 		todos_remove_by_index(idx);
 
 		// free(todo_item);
+		return;
+	}
+
+	if (check_begins_with("/todo/mark-as-complete", req->path)) {
+		sscanf(req->path, "/todo/mark-as-complete/%d", &idx);
+		todos_get_by_index(idx)->type = TODOS_TYPE_COMPLETE;
+		return;
+	}
+
+	if (check_begins_with("/todo/mark-as-incomplete", req->path)) {
+		sscanf(req->path, "/todo/mark-as-incomplete/%d", &idx);
+		todos_get_by_index(idx)->type = TODOS_TYPE_INCOMPLETE;
+		return;
+	}
+
+	if (check_begins_with("/todo/mark-as-in-progress", req->path)) {
+		sscanf(req->path, "/todo/mark-as-in-progress/%d", &idx);
+		todos_get_by_index(idx)->type = TODOS_TYPE_IN_PROGRESS;
 		return;
 	}
 }
@@ -176,6 +194,18 @@ void index_handler(struct ParsedRequest *req, char *res)
 	while (todo_cursor != NULL) {
 		sprintf(body_inner + strlen(body_inner), "<li>%s: %s",
 			todo_cursor->title, todos_type_to_string(todo_cursor));
+                
+                // TODO: Clean this code up
+
+		sprintf(body_inner + strlen(body_inner),
+			"<form action=\"/todo/mark-as-incomplete/%d\"><button type=\"submit\">Mark as Incomplete</button></form>",
+			i);
+		sprintf(body_inner + strlen(body_inner),
+			"<form action=\"/todo/mark-as-in-progress/%d\"><button type=\"submit\">Mark as In Progress</button></form>",
+			i);
+		sprintf(body_inner + strlen(body_inner),
+			"<form action=\"/todo/mark-as-complete/%d\"><button type=\"submit\">Mark as Complete</button></form>",
+			i);
 
 		sprintf(body_inner + strlen(body_inner),
 			"<form action=\"/todo/delete/%d\"><button type=\"submit\">Delete</button></form>",

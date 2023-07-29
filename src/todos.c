@@ -47,11 +47,12 @@ struct TodoItem *todos_get_from_end_by_index(int idx)
 
 void todos_insert_element(struct TodoItem *item)
 {
-	if (todos_tail == NULL) {
+	if (todos_tail == NULL || todos_head == NULL) {
 		todos_head = item;
 		todos_tail = item;
 		todos_head->next = NULL;
 		todos_tail->previous = NULL;
+                return;
 	}
 
 	item->next = NULL;
@@ -123,14 +124,17 @@ void todos_remove_by_index(int idx)
                 if (todo_item == todos_tail) {
                         todos_tail = todo_item->previous;
                 }
+                free(todo_item);
 
                 return;
         }
+        struct TodoItem* tmp = todo_item;
 
 	if (todo_item->previous != NULL && todo_item->previous->next != NULL) {
 		todo_item->previous->next = todo_item->next;
         }
-	if (todo_item->next != NULL && todo_item->next->previous != NULL)
+	if (todo_item->next != NULL && todo_item->next->previous != NULL) {
 		todo_item->next->previous = todo_item->previous;
-
+        }
+        free(tmp);
 }
